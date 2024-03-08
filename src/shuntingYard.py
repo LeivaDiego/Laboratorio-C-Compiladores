@@ -62,6 +62,23 @@ class ShuntingYard:
         result = self.transform_and_validate_subexpr(regex)
         return result if result != "" else False
 
+    def insert_explicit_concatenation(self, expression):
+        result = ""
+        for i, char in enumerate(expression):
+            result += char
+            if i + 1 < len(expression):
+                next_char = expression[i + 1]
+                if (char not in self.all_operators.union({'(', 'ϵ'}) and next_char not in self.all_operators.union({')', 'ϵ'})) or \
+                   (char == ')' and next_char not in self.all_operators.union({')', 'ϵ'})) or \
+                   (char not in self.all_operators.union({'(', 'ϵ'}) and next_char == '('):
+                    result += '·'
+        return result
+
+    def process_expression(self, expression):
+        transformed = self.transform_and_validate(expression)
+        if transformed:
+            return self.insert_explicit_concatenation(transformed)
+        return False
 
 test_expressions_full = [
     "a++",
@@ -79,6 +96,6 @@ test_expressions_full = [
 ]
 
 sy = ShuntingYard()
-transformed_expressions_corrected = {expr: sy.transform_and_validate(expr) for expr in test_expressions_full}
-for item in transformed_expressions_corrected:
-    print(f"{item}: {transformed_expressions_corrected[item]}")
+processed_expressions = {expr: sy.process_expression(expr) for expr in test_expressions_full}
+for item in processed_expressions:
+    print(f"{item}: {processed_expressions[item]}")

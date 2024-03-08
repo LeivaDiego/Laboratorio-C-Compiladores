@@ -5,6 +5,18 @@ class ShuntingYard:
         self.all_operators = self.binary_operators.union(self.unary_operators)
         self.special_characters = {'(', ')'}
     
+
+    def get_precedence(self, operator):
+        precedence = {
+            '*': 3,
+            '+': 3,
+            '?': 3,
+            '·': 2,
+            '|': 1
+        }
+        return precedence.get(operator, 0)
+
+
     def validate_parentheses(self, regex):
         stack = []
         for char in regex:
@@ -16,6 +28,7 @@ class ShuntingYard:
                 stack.pop()
         return not stack
 
+
     def apply_unary_operator(self, operand, operator):
         if operator == '*':
             return f'{operand}*'
@@ -23,6 +36,7 @@ class ShuntingYard:
             return f'({operand}{operand}*)'
         elif operator == '?':
             return f'({operand}|ϵ)'
+
 
     def transform_and_validate_subexpr(self, subexpr):
         new_expr = ""
@@ -55,12 +69,14 @@ class ShuntingYard:
             i += 1
         return new_expr
 
+
     def transform_and_validate(self, regex):
         if not self.validate_parentheses(regex):
             return False
         
         result = self.transform_and_validate_subexpr(regex)
         return result if result != "" else False
+
 
     def insert_explicit_concatenation(self, expression):
         result = ""
@@ -74,11 +90,44 @@ class ShuntingYard:
                     result += '·'
         return result
 
+
     def process_expression(self, expression):
         transformed = self.transform_and_validate(expression)
         if transformed:
             return self.insert_explicit_concatenation(transformed)
         return False
+    
+
+    def to_postfix(self, expression):
+        transformed = self.transform_and_validate(expression)
+        if transformed:
+            concat_transformed = self.insert_explicit_concatenation(transformed)
+        else:
+            return False
+
+
+        output = []
+        operator_stack = []
+
+        for char in concat_transformed:
+            if char.isalpha() or char.isdigit() or char == 'ϵ':
+                output.append(char)
+            elif char in self.all_operators:
+                while operator_stack and operator_stack[-1] != '(' and self.get_precedence(operator_stack[-1]) >= self.get_precedence(char):
+                    output.append(operator_stack.pop())
+                operator_stack.append(char)
+            elif char == '(':
+                operator_stack.append(char)
+            elif char == ')':
+                top_token = operator_stack.pop()
+                while top_token != '(':
+                    output.append(top_token)
+                    top_token = operator_stack.pop()
+
+        while operator_stack:
+            output.append(operator_stack.pop())
+
+        return ''.join(output)
 
 test_expressions_full = [
     "a++",
@@ -96,6 +145,6 @@ test_expressions_full = [
 ]
 
 sy = ShuntingYard()
-processed_expressions = {expr: sy.process_expression(expr) for expr in test_expressions_full}
+processed_expressions = {expr: sy.to_postfix(expr) for expr in test_expressions_full}
 for item in processed_expressions:
     print(f"{item}: {processed_expressions[item]}")

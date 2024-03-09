@@ -5,6 +5,25 @@ class LexicalAnalyzer:
         self.raw_code = []
         self.code = [] 
         self.definitions = {}
+        self.symbol_table = {
+            '+': 'PLUS',
+            '-': 'MINUS',
+            '*': 'STAR',
+            '/': 'DIV',
+            '(': 'LPAREN',
+            ')': 'RPAREN',
+            '\t': 'TAB',
+            '\n': 'NEWLINE',
+            '\r': 'CARRIAGE_RETURN',
+            ';': 'SEMICOLON',
+            ',': 'COMMA',
+            '=': 'EQUALS',
+            '<': 'LESS_THAN',
+            '>': 'GREATER_THAN',
+            '?': 'QUESTION',
+            ' ': 'WHITESPACE',
+
+        }
 
     def file_scanner(self, filepath):
         if not os.path.isfile(filepath):
@@ -76,6 +95,61 @@ class LexicalAnalyzer:
                             substitutions += 1
 
 
+    def is_character_class(self, regex):
+        # Verifica si la cadena contiene al menos un patrón 'caracter1'-'caracter2'
+        return regex.count("'-'") >= 1 and regex.startswith("['") and regex.endswith("']")
+
+    def is_normal_character_set(self, regex):
+        # Verifica si la entrada es un conjunto de caracteres normales
+        return regex.startswith("['") and regex.endswith("']") and all(c not in self.symbol_table for c in regex[2:-2])
+
+    def is_special_character_set(self, regex):
+        # Verifica si la entrada es un conjunto de caracteres especiales
+        return regex.startswith("['") and regex.endswith("']") and any(c in self.symbol_table for c in regex[2:-2].split("' '"))
+
+    def range_to_regex(self, regex):
+        if not self.is_character_class(regex):
+            raise ValueError("La entrada no es una clase de caracteres o no contiene rangos válidos.")
+        regex = regex[1:-1]
+        ranges = regex.split("''")
+        regex_result = "("
+        for range_str in ranges:
+            if '-' in range_str:
+                start_char, end_char = range_str.replace("'", "").split('-')
+                for char_code in range(ord(start_char), ord(end_char) + 1):
+                    regex_result += chr(char_code) + "|"
+            else:
+                regex_result += range_str.replace("'", "") + "|"
+        return regex_result.rstrip("|") + ")"
+
+    def convert_normal_character_set(self, regex):
+        characters = regex[2:-2].replace("'", "")  # Eliminar los corchetes y comillas simples
+        return '(' + '|'.join(characters) + ')'
+
+    def convert_special_character_set(self, regex):
+        characters = regex[2:-2].split("' '")
+        regex_result = '('
+        for char in characters:
+            char = char.replace("'", "")  # Eliminar las comillas simples
+            if char in self.symbol_table:
+                regex_result += self.symbol_table[char] + '|'
+            else:
+                regex_result += char + '|'
+        return regex_result.rstrip('|') + ')'  # Eliminar el último OR y cerrar paréntesis
+
+    def convert_regex(self, regex):
+        if self.is_normal_character_set(regex):
+            return self.convert_normal_character_set(regex)
+        elif self.is_special_character_set(regex):
+            return self.convert_special_character_set(regex)
+        elif self.is_character_class(regex):
+            return self.range_to_regex(regex)
+        else:
+            raise ValueError("La entrada no coincide con ningún formato conocido.")
+
+    def convert_definitions(self):
+        for ident, regex in self.definitions.items():
+            self.definitions[ident] = self.convert_regex(regex)
 
 analyzer = LexicalAnalyzer()
 path = input("Enter the path to the file: ")
@@ -89,4 +163,7 @@ print('Definiciones:')
 print(analyzer.definitions)
 analyzer.substitute_identifiers()
 print('Definiciones actualizadas:')
+print(analyzer.definitions)
+analyzer.convert_definitions()
+print('Definiciones convertidas:')
 print(analyzer.definitions)

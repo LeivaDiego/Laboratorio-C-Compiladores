@@ -228,6 +228,7 @@ class ShuntingYard:
 
 # Lista de expresiones de prueba
 test_expressions_full = [
+    "a|b)",
     "a++",
     "a(b|c)*",
     "a?+*",

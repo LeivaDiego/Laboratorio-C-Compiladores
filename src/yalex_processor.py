@@ -1,29 +1,13 @@
 import os
+from models import symbol_table
 
 class LexicalAnalyzer:
     def __init__(self):
         self.raw_code = []
         self.code = [] 
         self.definitions = {}
-        self.symbol_table = {
-            '+': 'PLUS',
-            '-': 'MINUS',
-            '*': 'STAR',
-            '/': 'DIV',
-            '(': 'LPAREN',
-            ')': 'RPAREN',
-            '\t': 'TAB',
-            '\n': 'NEWLINE',
-            '\r': 'CARRIAGE_RETURN',
-            ';': 'SEMICOLON',
-            ',': 'COMMA',
-            '=': 'EQUALS',
-            '<': 'LESS_THAN',
-            '>': 'GREATER_THAN',
-            '?': 'QUESTION',
-            ' ': 'WHITESPACE',
-
-        }
+        self.symbol_table = symbol_table
+        
 
     def file_scanner(self, filepath):
         if not os.path.isfile(filepath):
@@ -169,19 +153,17 @@ class LexicalAnalyzer:
             except ValueError:
                 continue
 
-analyzer = LexicalAnalyzer()
-path = input("Enter the path to the file: ")
-updated_path = analyzer.parse_path(path)
-analyzer.file_scanner(updated_path)
-analyzer.cleanup()
-print('Codigo limpio y separado:')
-print(analyzer.code)
-analyzer.extract_definitions()
-print('Definiciones:')
-print(analyzer.definitions)
-analyzer.convert_definitions()
-print('Definiciones convertidas:')
-print(analyzer.definitions)
-analyzer.substitute_identifiers()
-print('Definiciones actualizadas:')
-print(analyzer.definitions)
+    def analyze_file(self, path):
+        self.file_scanner(self.parse_path(path))
+        self.cleanup()
+        print('Código limpio y separado:')
+        print(self.code)
+        self.extract_definitions()
+        print('Definiciones:')
+        print(self.definitions)
+        self.convert_definitions()
+        print('Definiciones convertidas:')
+        print(self.definitions)
+        self.substitute_identifiers()
+        print('Definiciones actualizadas:')
+        print(self.definitions)

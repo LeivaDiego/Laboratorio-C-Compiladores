@@ -168,21 +168,6 @@ class ShuntingYard:
                     result += '·'
         return result
 
-
-    def process_expression(self, expression):
-            """
-            Procesa la expresión dada y devuelve el resultado.
-
-            Parameters:
-                expression (str): La expresión a procesar.
-
-            Returns:
-                bool: True si la expresión se transforma y valida correctamente, False en caso contrario.
-            """
-            transformed = self.transform_and_validate(expression)
-            if transformed:
-                return self.insert_explicit_concatenation(transformed)
-            return False
     
 
     def to_postfix(self, expression):

@@ -1,0 +1,18 @@
+symbol_table = {
+            '+': '#PLUS#',
+            '-': '#MINUS#',
+            '*': '#STAR#',
+            '/': '#DIV#',
+            '(': '#LPAREN#',
+            ')': '#RPAREN#',
+            '\t': '#TAB#',
+            '\n': '#NEWLINE#',
+            '\r': '#CARRIAGE_RETURN#',
+            ';': '#SEMICOLON#',
+            ',': '#COMMA#',
+            '=': '#EQUALS#',
+            '<': '#LESS_THAN#',
+            '>': '#GREATER_THAN#',
+            '?': '#QUESTION#',
+            ' ': '#WHITESPACE#',
+        }

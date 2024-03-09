@@ -104,15 +104,25 @@ class LexicalAnalyzer:
         return regex.startswith("['") and regex.endswith("']") and all(c not in self.symbol_table for c in regex[2:-2])
 
     def is_special_character_set(self, regex):
-        # Verifica si la entrada es un conjunto de caracteres especiales
-        return regex.startswith("['") and regex.endswith("']") and any(c in self.symbol_table for c in regex[2:-2].split("' '"))
+        # Verifica si la entrada es un conjunto de caracteres especiales.
+        if not (regex.startswith("['") and regex.endswith("']")):
+            return False
+        
+        # Extraer el contenido entre [' y '] y dividirlo por '' para manejar correctamente las secuencias de escape.
+        content = regex[2:-2].split("''")
+        for item in content:
+            if len(item) == 1 and item in self.symbol_table:
+                return True
+            elif len(item) > 1 and item.encode().decode('unicode_escape') in self.symbol_table:
+                return True
+        return False
 
     def range_to_regex(self, regex):
         if not self.is_character_class(regex):
             raise ValueError("La entrada no es una clase de caracteres o no contiene rangos válidos.")
         regex = regex[1:-1]
         ranges = regex.split("''")
-        regex_result = "("
+        regex_result = ""
         for range_str in ranges:
             if '-' in range_str:
                 start_char, end_char = range_str.replace("'", "").split('-')
@@ -120,22 +130,27 @@ class LexicalAnalyzer:
                     regex_result += chr(char_code) + "|"
             else:
                 regex_result += range_str.replace("'", "") + "|"
-        return regex_result.rstrip("|") + ")"
+        return regex_result.rstrip("|")
 
     def convert_normal_character_set(self, regex):
         characters = regex[2:-2].replace("'", "")  # Eliminar los corchetes y comillas simples
-        return '(' + '|'.join(characters) + ')'
+        return '|'.join(characters)
 
     def convert_special_character_set(self, regex):
-        characters = regex[2:-2].split("' '")
-        regex_result = '('
-        for char in characters:
-            char = char.replace("'", "")  # Eliminar las comillas simples
-            if char in self.symbol_table:
-                regex_result += self.symbol_table[char] + '|'
+        content = regex[2:-2].split("''")
+        regex_result = ''
+        for item in content:
+            if item in self.symbol_table:
+                regex_result += self.symbol_table[item] + '|'
             else:
-                regex_result += char + '|'
-        return regex_result.rstrip('|') + ')'  # Eliminar el último OR y cerrar paréntesis
+                # Manejar la secuencia de escape.
+                decoded_item = item.encode().decode('unicode_escape')
+                if decoded_item in self.symbol_table:
+                    regex_result += self.symbol_table[decoded_item] + '|'
+                else:
+                    regex_result += decoded_item + '|'
+        return regex_result.rstrip('|')
+
 
     def convert_regex(self, regex):
         if self.is_normal_character_set(regex):
@@ -149,7 +164,10 @@ class LexicalAnalyzer:
 
     def convert_definitions(self):
         for ident, regex in self.definitions.items():
-            self.definitions[ident] = self.convert_regex(regex)
+            try:
+                self.definitions[ident] = self.convert_regex(regex)
+            except ValueError:
+                continue
 
 analyzer = LexicalAnalyzer()
 path = input("Enter the path to the file: ")
@@ -161,9 +179,9 @@ print(analyzer.code)
 analyzer.extract_definitions()
 print('Definiciones:')
 print(analyzer.definitions)
-analyzer.substitute_identifiers()
-print('Definiciones actualizadas:')
-print(analyzer.definitions)
 analyzer.convert_definitions()
 print('Definiciones convertidas:')
+print(analyzer.definitions)
+analyzer.substitute_identifiers()
+print('Definiciones actualizadas:')
 print(analyzer.definitions)

@@ -6,6 +6,8 @@ from tree import SyntaxTree
 
 def main():
     while True:
+        syntax_trees = []
+
         # Solicitar al usuario que ingrese la ruta del archivo a analizar
         file_path = input("Ingrese la ruta del archivo a analizar: ")
 
@@ -32,6 +34,10 @@ def main():
                 print('Expresión regular postfix:', postfix_expression)
                 syntax_tree = SyntaxTree(postfix_expression, f"{file_name}_{identifier}")
                 syntax_tree.visualize()
+                syntax_trees.append(syntax_tree)
+
+        # mega_tree = SyntaxTree.concatenate_trees(syntax_trees, file_name)
+        # mega_tree.visualize()
 
         # Solicitar al usuario si desea analizar otro archivo
         another_file = input("¿Desea analizar otro archivo? (s/n): ")

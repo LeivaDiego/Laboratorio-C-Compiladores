@@ -1,6 +1,7 @@
 from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
 
+
 class SyntaxTree:
     def __init__(self, postfix_expr, name):
         self.postfix_expr = postfix_expr
@@ -38,3 +39,14 @@ class SyntaxTree:
         DotExporter(self.root).to_dotfile(dot_filename)
         DotExporter(self.root).to_picture(png_filename)
         print(f"Árbol guardado como {dot_filename} y {png_filename}")
+
+
+    # @staticmethod
+    # def concatenate_trees(trees, name):
+    #     # Crear un nuevo árbol con un nodo raíz vacío
+    #     mega_tree = SyntaxTree("", name)
+
+    #     # Añadir cada árbol de la lista como un hijo del nodo raíz
+    #     mega_tree.root = Node("·", children=[tree.root for tree in trees])
+
+    #     return mega_tree

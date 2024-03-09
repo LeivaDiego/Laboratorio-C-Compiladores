@@ -209,32 +209,3 @@ class ShuntingYard:
                 output.append(operator_stack.pop())
 
             return ''.join(output)
-
-
-# Lista de expresiones de prueba
-test_expressions_full = [
-    "a|b)",
-    "a++",
-    "a(b|c)*",
-    "a?+*",
-    "(a|b)c*",
-    "a*|(b+c)",
-    "(a|b)?c+",
-    "ab+?c",
-    "(x|y)*z?",
-    "a?b*c+",
-    "w+(x|y)?z*",
-    "(a|b)?(c|d)*e+",
-    "(0|1|2|3)(.(0|1|2|3))?(E(+|-)?(0|1|2|3))?"
-]
-
-# Crear una instancia de la clase ShuntingYard
-sy = ShuntingYard()
-
-# Procesar todas las expresiones de prueba y almacenar los resultados en un diccionario
-# La clave es la expresión de prueba y el valor es el resultado de la conversión a notación postfija
-processed_expressions = {expr: sy.to_postfix(expr) for expr in test_expressions_full}
-
-# Imprimir todas las expresiones de prueba y sus correspondientes resultados
-for item in processed_expressions:
-    print(f"{item}: {processed_expressions[item]}")

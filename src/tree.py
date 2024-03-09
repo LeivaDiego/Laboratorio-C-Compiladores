@@ -2,8 +2,9 @@ from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
 
 class SyntaxTree:
-    def __init__(self, postfix_expr):
+    def __init__(self, postfix_expr, name):
         self.postfix_expr = postfix_expr
+        self.name = name
         self.root = self.build_tree()
 
     def build_tree(self):
@@ -32,9 +33,8 @@ class SyntaxTree:
             print(treestr.ljust(8))
     
     def visualize(self):
-        DotExporter(self.root).to_picture("SyntaxTree.png")
-
-expr = "ab·c*·"
-tree = SyntaxTree(expr)
-tree.display()
-tree.visualize()
+        dot_filename = f"{self.name}.dot"
+        png_filename = f"{self.name}.png"
+        DotExporter(self.root).to_dotfile(dot_filename)
+        DotExporter(self.root).to_picture(png_filename)
+        print(f"Árbol guardado como {dot_filename} y {png_filename}")
